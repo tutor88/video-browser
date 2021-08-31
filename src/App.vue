@@ -1,26 +1,52 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="My appie" />
+  <div class="container">
+    <SearchBar @termChange="onTermChange"></SearchBar>
+    <div class="row">
+      <VideoDetail :video="selectedVideo" />
+      <VideoList @videoSelect="onVideoSelect" :videos="videos"></VideoList>
+    </div>
+  </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
-
+import axios from 'axios';
+import SearchBar from './components/SearchBar';
+import VideoList from './components/VideoList';
+import VideoDetail from './components/VideoDetail';
+const API_KEY = 'AIzaSyC1kQmCPOvC5yzIen3Y-NiJUv6bsNYuers';
 export default {
-  name: "App",
+  name: 'App',
   components: {
-    HelloWorld,
+    SearchBar,
+    VideoList,
+    VideoDetail
   },
+  ///data needs to be a function that returns an object
+  //otherwise a component would modify the data info
+  data() {
+    return { videos: [], selectedVideo: null };
+  },
+  methods: {
+    ///problem is returning a proxy?
+    onVideoSelect(video) {
+      this.selectedVideo = video;
+      console.log(video);
+    },
+
+    onTermChange(searchTerm) {
+      axios
+        .get('https://www.googleapis.com/youtube/v3/search', {
+          params: {
+            key: API_KEY,
+            type: 'video',
+            part: 'snippet',
+            q: searchTerm
+          }
+        })
+        .then(response => {
+          this.videos = response.data.items;
+        });
+    }
+  }
 };
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
